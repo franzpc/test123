@@ -36,8 +36,8 @@ function mostrarListaResultados(poblados) {
     listaDiv.style.display = 'block';
 }
 
-// ==================== EVENT LISTENERS ====================
-document.addEventListener('DOMContentLoaded', function() {
+// ==================== INICIALIZACIÓN PRINCIPAL ====================
+function inicializarApp() {
     // Inicializar mapa
     initMap();
 
@@ -48,4 +48,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('filtroNombre').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') aplicarFiltros();
     });
-});
+
+    // Event listener para el formulario de reportes
+    document.getElementById('reporteForm').addEventListener('submit', enviarReporte);
+
+    // Event listener para reintentar ubicación
+    document.getElementById('coordenadas').addEventListener('click', function() {
+        if (this.textContent.includes('No se pudo') || this.textContent.includes('Obteniendo')) {
+            obtenerUbicacion();
+        }
+    });
+}
+
+// ==================== EVENT LISTENER ÚNICO ====================
+document.addEventListener('DOMContentLoaded', inicializarApp);
