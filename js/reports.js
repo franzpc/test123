@@ -127,15 +127,6 @@ async function enviarReporte(e) {
     }
 }
 
-// ==================== INICIALIZAR EVENT LISTENERS DE REPORTES ====================
-document.addEventListener('DOMContentLoaded', function() {
-    // Event listener para el formulario de reportes
-    document.getElementById('reporteForm').addEventListener('submit', enviarReporte);
-
-    // Event listener para reintentar ubicación
-    document.getElementById('coordenadas').addEventListener('click', function() {
-        if (this.textContent.includes('No se pudo') || this.textContent.includes('Obteniendo')) {
-            obtenerUbicacion();
-        }
-    });
-});
+// ==================== NOTA ====================
+// Los event listeners de reportes se inicializan en ui.js
+// dentro de la función inicializarApp() para evitar duplicación
