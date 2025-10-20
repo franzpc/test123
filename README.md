@@ -44,33 +44,73 @@ test123/
 ├── css/
 │   └── styles.css         # Estilos modernos
 ├── js/
-│   ├── config.js          # Configuración y constantes
+│   ├── config.js          # Configuración y constantes (NO se sube a git)
+│   ├── config.example.js  # Plantilla de configuración
 │   ├── map.js             # Lógica del mapa Leaflet
 │   ├── data.js            # Gestión de datos de Supabase
 │   ├── ui.js              # Interfaz de usuario
 │   └── reports.js         # Sistema de reportes
+├── .gitignore             # Archivos ignorados por git
 └── README.md              # Este archivo
 ```
 
 ## Instalación
 
-1. **Clonar el repositorio**:
+### 1. Clonar el repositorio
 ```bash
 git clone https://github.com/franzpc/test123.git
 cd test123
 ```
 
-2. **Configurar Supabase**:
-   - Edita `js/config.js` y actualiza las credenciales de Supabase
-   - Asegúrate de tener las tablas `poblados`, `reportes` y `aeropuertos` creadas
+### 2. Configurar las credenciales de Supabase
 
-3. **Ejecutar la aplicación**:
-   - Abre `index.html` en un navegador moderno
-   - O usa un servidor local:
-   ```bash
-   python3 -m http.server 8000
-   # Luego abre http://localhost:8000
-   ```
+**IMPORTANTE**: Las credenciales NO están incluidas en el repositorio por seguridad.
+
+```bash
+# Copiar el archivo de ejemplo
+cp js/config.example.js js/config.js
+```
+
+Luego edita `js/config.js` y reemplaza las credenciales:
+
+```javascript
+// Reemplaza estos valores con tus credenciales reales de Supabase
+const SUPABASE_URL = 'https://tu-proyecto.supabase.co';
+const SUPABASE_KEY = 'tu-anon-key-aqui';
+```
+
+**¿Dónde encontrar tus credenciales?**
+1. Ve a tu proyecto en [Supabase](https://app.supabase.com)
+2. Navega a Settings > API
+3. Copia el `Project URL` y `anon/public key`
+
+### 3. Configurar la base de datos
+
+Asegúrate de tener las siguientes tablas creadas en Supabase (ver sección [Base de Datos](#base-de-datos) más abajo).
+
+### 4. Ejecutar la aplicación
+
+Opción A - Abrir directamente:
+```bash
+# Abre index.html en tu navegador
+open index.html  # macOS
+xdg-open index.html  # Linux
+start index.html  # Windows
+```
+
+Opción B - Usar servidor local:
+```bash
+# Python 3
+python3 -m http.server 8000
+
+# Python 2
+python -m SimpleHTTPServer 8000
+
+# Node.js (si tienes http-server instalado)
+npx http-server
+
+# Luego abre http://localhost:8000
+```
 
 ## Base de Datos
 
@@ -132,25 +172,52 @@ CREATE TABLE reportes (
 
 ## Seguridad
 
-⚠️ **IMPORTANTE**: Este proyecto actualmente tiene las credenciales de Supabase expuestas en el código del cliente. Para producción se recomienda:
+### ✅ Credenciales Protegidas
 
-1. Implementar un backend/API intermediario
-2. Usar variables de entorno para credenciales
-3. Configurar Row Level Security (RLS) en Supabase
-4. Implementar autenticación de usuarios
-5. Rotar credenciales expuestas
+Este proyecto implementa buenas prácticas de seguridad:
+
+- ✅ **Credenciales NO incluidas** en el repositorio
+- ✅ **Archivo `.gitignore`** configurado para proteger `config.js`
+- ✅ **Plantilla `config.example.js`** para guiar la configuración
+- ✅ Las credenciales se configuran localmente y nunca se suben a git
+
+### Recomendaciones Adicionales para Producción
+
+Para un entorno de producción, considera implementar:
+
+1. **Backend/API intermediario**: Crea un servidor que gestione las peticiones a Supabase
+2. **Row Level Security (RLS)**: Configura políticas de seguridad en Supabase
+   ```sql
+   -- Ejemplo: Solo permitir lectura de poblados
+   ALTER TABLE poblados ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "Permitir lectura pública" ON poblados FOR SELECT USING (true);
+   ```
+3. **Autenticación de usuarios**: Implementa login para gestión de reportes
+4. **Rate limiting**: Limita el número de peticiones por IP
+5. **HTTPS**: Sirve la aplicación solo por HTTPS en producción
+6. **Service Key**: Nunca expongas la `service_role` key en el frontend
+
+### ⚠️ Nota Importante
+
+Aunque las credenciales están protegidas del repositorio, la `anon key` de Supabase siempre es visible en el cliente. Por esto es crucial:
+- Configurar RLS en todas las tablas
+- Usar políticas restrictivas de lectura/escritura
+- Validar todos los datos en el backend cuando sea posible
 
 ## Mejoras Futuras
 
-- [ ] Backend con Node.js/Express
-- [ ] Autenticación de usuarios
+- [x] ~~Protección de credenciales con variables de entorno~~ ✅
+- [ ] Backend con Node.js/Express para mayor seguridad
+- [ ] Autenticación de usuarios con Supabase Auth
 - [ ] Panel de administración para gestionar reportes
-- [ ] Notificaciones push
-- [ ] Modo offline (PWA)
-- [ ] Tests automatizados
-- [ ] CI/CD
-- [ ] Análisis de datos geoespaciales
-- [ ] Integración con más fuentes de datos
+- [ ] Notificaciones push cuando se creen nuevos reportes
+- [ ] Modo offline (PWA) con Service Workers
+- [ ] Tests automatizados (Jest, Cypress)
+- [ ] CI/CD con GitHub Actions
+- [ ] Análisis de datos geoespaciales avanzados
+- [ ] Integración con más fuentes de datos oficiales
+- [ ] Modo oscuro/claro
+- [ ] Filtros avanzados por tipo, provincia, fecha
 
 ## Contribuir
 

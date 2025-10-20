@@ -1,6 +1,9 @@
 // ==================== CONFIGURACIÓN DE SUPABASE ====================
-const SUPABASE_URL = 'https://neixcsnkwtgdxkucfcnb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5laXhjc25rd3RnZHhrdWNmY25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NzQ0OTQsImV4cCI6MjA2NTE1MDQ5NH0.OLcE9XYvYL6vzuXqcgp3dMowDZblvQo8qR21Cj39nyY';
+// IMPORTANTE: Copia este archivo a config.js y reemplaza con tus credenciales reales
+// El archivo config.js NO se subirá a git por seguridad
+
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
 
 // ==================== CONFIGURACIÓN DEL MAPA ====================
 const MAP_CONFIG = {
