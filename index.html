@@ -3,121 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Geoportal interactivo de Ecuador - Visualiza poblados y reporta problemas ciudadanos">
+    <meta name="author" content="Francisco PC">
     <title>Geoportal Ecuador</title>
+
+    <!-- Leaflet CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        #map { height: 750px; }
-        .status { margin: 10px 0; }
-        .custom-marker { 
-            background: transparent !important; 
-            border: none !important; 
-            text-align: center !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-        .reporte-recent {
-            animation: flash 2s infinite;
-        }
-        @keyframes flash {
-            0%, 50% { opacity: 1; }
-            25%, 75% { opacity: 0.3; }
-        }
-        .poblado-tooltip {
-            background: rgba(0,0,0,0.8) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 4px !important;
-            font-size: 11px !important;
-            padding: 2px 6px !important;
-        }
-        .resultado-item {
-            transition: background-color 0.2s;
-            cursor: pointer;
-        }
-        .resultado-item:hover {
-            background-color: #f8f9fa !important;
-        }
-        #listaResultados {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .tabla-info {
-            font-size: 0.85em;
-            margin-bottom: 5px;
-        }
-        .modal-backdrop {
-            backdrop-filter: blur(5px);
-        }
-        .form-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-        }
-        .form-content {
-            background: white;
-            border-radius: 10px;
-            margin: 10px;
-        }
-    </style>
+
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container-fluid">
+    <!-- Header -->
+    <div class="header">
+        <div class="container-fluid">
+            <h1 class="text-center">Geoportal Ecuador</h1>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-3">
+        <!-- Status Bar -->
         <div class="row">
             <div class="col-12">
-                <h1 class="text-center mt-3">Geoportal - Ecuador</h1>
                 <div id="status" class="alert alert-info status">Cargando datos...</div>
             </div>
         </div>
-        
+
+        <!-- Map and Controls -->
         <div class="row">
+            <!-- Sidebar -->
             <div class="col-md-3">
                 <!-- Capas -->
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">
                         <h5>Capas</h5>
                     </div>
                     <div class="card-body">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="poblados" checked onchange="toggleLayer('poblados')">
-                            <label class="form-check-label" for="poblados">🏘️ Poblados</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="poblados" checked
+                                   onchange="toggleLayer('poblados')">
+                            <label class="form-check-label" for="poblados">
+                                🏘️ Poblados
+                            </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="reportes" checked onchange="toggleLayer('reportes')">
-                            <label class="form-check-label" for="reportes">⚠️ Reportes</label>
+                            <input class="form-check-input" type="checkbox" id="reportes" checked
+                                   onchange="toggleLayer('reportes')">
+                            <label class="form-check-label" for="reportes">
+                                ⚠️ Reportes
+                            </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- Información de Base de Datos -->
-                <div class="card mt-3">
+                <div class="card mb-3">
                     <div class="card-header">
                         <h6>Información de Base de Datos</h6>
                     </div>
                     <div class="card-body">
-                        <small class="text-muted">
-                            <div><strong>Tablas disponibles:</strong></div>
-                            <div id="tablesInfo">Cargando tablas...</div>
-                        </small>
+                        <div id="tablesInfo" class="text-muted">
+                            Cargando tablas...
+                        </div>
                     </div>
                 </div>
-                
+
                 <!-- Filtros -->
-                <div class="card mt-3">
+                <div class="card mb-3">
                     <div class="card-header">
-                        <h5>Filtros</h5>
+                        <h5>Búsqueda</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Buscar poblado:</label>
-                            <input type="text" class="form-control" id="filtroNombre" placeholder="Nombre del poblado...">
+                            <input type="text" class="form-control" id="filtroNombre"
+                                   placeholder="Nombre del poblado...">
                         </div>
-                        <button class="btn btn-primary w-100" onclick="aplicarFiltros()">Buscar</button>
-                        <button class="btn btn-secondary w-100 mt-2" onclick="limpiarFiltros()">Limpiar</button>
-                        <button class="btn btn-warning w-100 mt-2" onclick="abrirModalReporte()" data-bs-toggle="modal" data-bs-target="#reporteModal">📝 Reportar Problema</button>
-                        <button class="btn btn-info w-100 mt-2" onclick="actualizarReportes()">🔄 Actualizar Reportes</button>
-                        <button class="btn btn-success w-100 mt-2" onclick="descargarReportesGeoJSON()">📥 Descargar Reportes (GeoJSON)</button>
-                        
+                        <button class="btn btn-primary w-100 mb-2" onclick="aplicarFiltros()">
+                            Buscar
+                        </button>
+                        <button class="btn btn-secondary w-100 mb-2" onclick="limpiarFiltros()">
+                            Limpiar
+                        </button>
+
                         <!-- Lista de Resultados -->
                         <div id="listaResultados" class="mt-3" style="display: none;">
                             <div class="border rounded">
@@ -130,27 +102,47 @@
                     </div>
                 </div>
 
-                <!-- Reportes Counter -->
-                <div class="card mt-3">
+                <!-- Acciones -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Acciones</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-warning w-100 mb-2" onclick="abrirModalReporte()"
+                                data-bs-toggle="modal" data-bs-target="#reporteModal">
+                            📝 Reportar Problema
+                        </button>
+                        <button class="btn btn-info w-100 mb-2" onclick="actualizarReportes()">
+                            🔄 Actualizar Reportes
+                        </button>
+                        <button class="btn btn-success w-100" onclick="descargarReportesGeoJSON()">
+                            📥 Descargar Reportes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contador de Reportes -->
+                <div class="card">
                     <div class="card-body text-center">
                         <small class="text-muted">
-                            <strong>Reportes:</strong> <span id="reportesCount">0</span> reportes activos
+                            <strong>Reportes activos:</strong>
+                            <span id="reportesCount">0</span>
                         </small>
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Map -->
             <div class="col-md-9">
-                <div id="map" class="border rounded"></div>
+                <div id="map"></div>
             </div>
         </div>
-        
-        <div class="row mt-3">
+
+        <!-- Info Footer -->
+        <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <span id="info">Cargando información...</span>
-                    </div>
+                <div class="info-footer">
+                    <span id="info">Cargando información...</span>
                 </div>
             </div>
         </div>
@@ -159,659 +151,87 @@
     <!-- Modal para Reportar Problema -->
     <div class="modal fade" id="reporteModal" tabindex="-1" aria-labelledby="reporteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content p-0">
-                <div class="form-container">
-                    <div class="form-content p-4">
-                        <div class="modal-header border-0 pb-0">
-                            <div class="text-center w-100">
-                                <h2 class="modal-title" id="reporteModalLabel">📍 Reportar Problema</h2>
-                                <p class="text-muted">Ayúdanos a mejorar tu comunidad reportando problemas desde tu ubicación</p>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        
-                        <div class="modal-body">
-                            <div id="statusModal" class="alert d-none"></div>
-                            
-                            <form id="reporteForm">
-                                <div class="mb-3">
-                                    <label for="nombre" class="form-label">Nombre completo *</label>
-                                    <input type="text" class="form-control" id="nombre" required placeholder="Tu nombre y apellido">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="tipoProblema" class="form-label">Tipo de problema *</label>
-                                    <select class="form-select" id="tipoProblema" required>
-                                        <option value="">Selecciona el tipo</option>
-                                        <option value="Infraestructura">Problemas de infraestructura</option>
-                                        <option value="Servicios">Servicios públicos</option>
-                                        <option value="Seguridad">Seguridad ciudadana</option>
-                                        <option value="Medio Ambiente">Medio ambiente</option>
-                                        <option value="Transporte">Transporte público</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="descripcion" class="form-label">Descripción del problema *</label>
-                                    <textarea class="form-control" id="descripcion" rows="4" required 
-                                            placeholder="Describe detalladamente el problema que encontraste..."></textarea>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="ubicacionPermiso" required>
-                                        <label class="form-check-label" for="ubicacionPermiso">
-                                            Autorizo usar mi ubicación actual para el reporte *
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Ubicación detectada:</label>
-                                    <div id="coordenadas" class="form-control bg-light" style="cursor: pointer;">Obteniendo ubicación...</div>
-                                </div>
-                                
-                                <div class="modal-footer border-0 pt-0">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn btn-warning">📤 Enviar Reporte</button>
-                                </div>
-                            </form>
-                        </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="w-100">
+                        <h2 class="modal-title text-center" id="reporteModalLabel">
+                            📍 Reportar Problema
+                        </h2>
+                        <p class="text-muted text-center mb-0">
+                            Ayúdanos a mejorar tu comunidad reportando problemas desde tu ubicación
+                        </p>
                     </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="statusModal" class="alert d-none"></div>
+
+                    <form id="reporteForm">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre completo *</label>
+                            <input type="text" class="form-control" id="nombre" required
+                                   placeholder="Tu nombre y apellido">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipoProblema" class="form-label">Tipo de problema *</label>
+                            <select class="form-select" id="tipoProblema" required>
+                                <option value="">Selecciona el tipo</option>
+                                <option value="Infraestructura">Problemas de infraestructura</option>
+                                <option value="Servicios">Servicios públicos</option>
+                                <option value="Seguridad">Seguridad ciudadana</option>
+                                <option value="Medio Ambiente">Medio ambiente</option>
+                                <option value="Transporte">Transporte público</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción del problema *</label>
+                            <textarea class="form-control" id="descripcion" rows="4" required
+                                      placeholder="Describe detalladamente el problema que encontraste..."></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ubicacionPermiso" required>
+                                <label class="form-check-label" for="ubicacionPermiso">
+                                    Autorizo usar mi ubicación actual para el reporte *
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación detectada:</label>
+                            <div id="coordenadas">Obteniendo ubicación...</div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" form="reporteForm" class="btn btn-warning">
+                        📤 Enviar Reporte
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <script>
-        const SUPABASE_URL = 'https://neixcsnkwtgdxkucfcnb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5laXhjc25rd3RnZHhrdWNmY25iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1NzQ0OTQsImV4cCI6MjA2NTE1MDQ5NH0.OLcE9XYvYL6vzuXqcgp3dMowDZblvQo8qR21Cj39nyY';
-        
-        let map, pobladosLayer, reportesLayer;
-        let allPoblados = [], reportes = [];
-        let activeLayers = { poblados: true, reportes: true };
-        let ubicacionActual = null;
-        
-        function initMap() {
-            map = L.map('map').setView([-1.0, -78.5], 7);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-            
-            pobladosLayer = L.layerGroup().addTo(map);
-            reportesLayer = L.layerGroup().addTo(map);
-            
-            // Zoom listener para mostrar/ocultar según nivel
-            map.on('zoomend', function() {
-                mostrarDatos();
-            });
-        }
-        
-        async function cargarDatos() {
-            try {
-                updateStatus('Cargando poblados...', 'info');
-                // Cargar TODOS los poblados sin límite usando múltiples requests si es necesario
-                let allPobladosTemp = [];
-                let offset = 0;
-                const limit = 1000; // Cargar de 1000 en 1000
-                
-                while (true) {
-                    const poblados = await fetch(`${SUPABASE_URL}/rest/v1/poblados?select=*,geom&limit=${limit}&offset=${offset}`, {
-                        headers: { 
-                            'apikey': SUPABASE_KEY, 
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    });
-                    const batch = await poblados.json();
-                    
-                    if (batch.length === 0) break; // No hay más registros
-                    
-                    allPobladosTemp = allPobladosTemp.concat(batch);
-                    offset += limit;
-                    
-                    updateStatus(`Cargando poblados... ${allPobladosTemp.length} registros`, 'info');
-                    
-                    if (batch.length < limit) break; // Último lote
-                }
-                
-                allPoblados = allPobladosTemp;
-                
-                updateStatus('Cargando reportes...', 'info');
-                await cargarReportes();
-                
-                updateStatus('Cargando información de tablas...', 'info');
-                await cargarInfoTablas();
-                
-                updateStatus(`Cargados: ${allPoblados.length} poblados, ${reportes.length} reportes`, 'success');
-                
-                mostrarDatos();
-                
-            } catch (error) {
-                updateStatus(`Error: ${error.message}`, 'danger');
-            }
-        }
-        
-        function updateStatus(message, type) {
-            document.getElementById('status').className = `alert alert-${type} status`;
-            document.getElementById('status').textContent = message;
-        }
-        
-        function mostrarDatos() {
-            pobladosLayer.clearLayers();
-            reportesLayer.clearLayers();
-            
-            const zoom = map.getZoom();
-            
-            if (activeLayers.poblados) {
-                allPoblados.forEach((poblado) => {
-                    if (poblado.nombre && poblado.geom) {
-                        const coords = extractCoordinates(poblado.geom);
-                        if (coords && shouldShowPoblado(poblado.tipo, zoom)) {
-                            const icon = getPobladoIcon(poblado.tipo);
-                            const marker = L.marker(coords, { icon })
-                                .bindPopup(`
-                                    <strong>🏘️ ${poblado.nombre}</strong><br>
-                                    <strong>Provincia:</strong> ${poblado.provincia || 'N/A'}<br>
-                                    <strong>Tipo:</strong> ${poblado.tipo || 'N/A'}<br>
-                                    <strong>Código:</strong> ${poblado.f_code || 'N/A'}<br>
-                                    <strong>Soc:</strong> ${poblado.soc || 'N/A'}
-                                `)
-                                .bindTooltip(poblado.nombre, { 
-                                    permanent: false, 
-                                    direction: 'top',
-                                    className: 'poblado-tooltip',
-                                    offset: [0, -15]
-                                });
-                            pobladosLayer.addLayer(marker);
-                        }
-                    }
-                });
-            }
-            
-            if (activeLayers.reportes) {
-                reportes.forEach((reporte, index) => {
-                    const coords = [reporte.lat, reporte.lng];
-                    const icon = getReporteIcon(index < 5); // Los 5 más recientes parpadean
-                    const marker = L.marker(coords, { icon }).bindPopup(`
-                        <strong>⚠️ REPORTE - ${reporte.tipo || 'Sin especificar'}</strong><br>
-                        <strong>Reportado por:</strong> ${reporte.nombre}<br>
-                        <strong>Descripción:</strong> ${reporte.descripcion}<br>
-                        <strong>Fecha:</strong> ${new Date(reporte.fecha_creacion).toLocaleString()}<br>
-                        <strong>Estado:</strong> ${reporte.estado || 'Pendiente'}<br>
-                        ${reporte.punto_cercano ? `<strong>Punto cercano:</strong> ${reporte.punto_cercano}<br>` : ''}
-                    `);
-                    reportesLayer.addLayer(marker);
-                });
-            }
-            
-            updateInfo();
-        }
-        
-        function shouldShowPoblado(tipo, zoom) {
-            // Mostrar más poblados según el zoom
-            if (zoom >= 12) return true; // Mostrar todos con zoom alto
-            if (zoom >= 10 && ['Capital Provincial', 'Cabecera Cantonal', 'Cabecera Parroquial'].includes(tipo)) return true;
-            if (zoom >= 8 && ['Capital Provincial', 'Cabecera Cantonal'].includes(tipo)) return true;
-            if (zoom >= 6 && tipo === 'Capital Provincial') return true;
-            return false;
-        }
-        
-        function getPobladoIcon(tipo) {
-            let color;
-            switch(tipo) {
-                case 'Capital Provincial':
-                    color = 'red'; break;
-                case 'Cabecera Cantonal':
-                    color = 'orange'; break;
-                case 'Cabecera Parroquial':
-                    color = 'green'; break;
-                case 'Recinto':
-                    color = 'blue'; break;
-                default:
-                    color = 'gray';
-            }
-            return new L.Icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-        }
-        
-        function getReporteIcon(isRecent = false) {
-            return new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41],
-                className: isRecent ? 'reporte-recent' : ''
-            });
-        }
-        
-        function extractCoordinates(geom) {
-            try {
-                if (typeof geom === 'string') {
-                    // Si es string tipo "POINT(-79.123 -1.456)"
-                    const match = geom.match(/POINT\(([^)]+)\)/);
-                    if (match) {
-                        const [lng, lat] = match[1].split(' ').map(parseFloat);
-                        return [lat, lng];
-                    }
-                } else if (geom && geom.coordinates) {
-                    // Si es GeoJSON
-                    const [lng, lat] = geom.coordinates;
-                    return [lat, lng];
-                } else if (geom && geom.type === 'Point') {
-                    // Otro formato GeoJSON
-                    const [lng, lat] = geom.coordinates;
-                    return [lat, lng];
-                }
-                return null;
-            } catch (error) {
-                console.error('Error extrayendo coordenadas:', error, geom);
-                return null;
-            }
-        }
-        
-        function toggleLayer(layerName) {
-            activeLayers[layerName] = !activeLayers[layerName];
-            
-            // Mostrar/ocultar la capa correspondiente
-            if (layerName === 'poblados') {
-                if (activeLayers.poblados) {
-                    map.addLayer(pobladosLayer);
-                } else {
-                    map.removeLayer(pobladosLayer);
-                }
-            } else if (layerName === 'reportes') {
-                if (activeLayers.reportes) {
-                    map.addLayer(reportesLayer);
-                } else {
-                    map.removeLayer(reportesLayer);
-                }
-            }
-            
-            mostrarDatos();
-        }
-        
-        // Cargar reportes desde la base de datos - CON PUNTO CERCANO
-        async function cargarReportes() {
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/reportes?select=*&visible=eq.true&order=fecha_creacion.desc`, {
-                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-                });
-                
-                if (response.ok) {
-                    reportes = await response.json();
-                    document.getElementById('reportesCount').textContent = reportes.length;
-                } else {
-                    console.warn('No se pudieron cargar los reportes desde la base de datos');
-                    reportes = [];
-                }
-            } catch (error) {
-                console.error('Error cargando reportes:', error);
-                reportes = [];
-            }
-        }
-        
-        // Función para actualizar solo los reportes
-        async function actualizarReportes() {
-            updateStatus('Actualizando reportes...', 'info');
-            await cargarReportes();
-            mostrarDatos();
-            updateStatus(`Reportes actualizados: ${reportes.length} reportes activos`, 'success');
-        }
-        
-        async function aplicarFiltros() {
-            const nombre = document.getElementById('filtroNombre').value.trim();
-            
-            if (!nombre) {
-                updateStatus('Por favor ingresa un nombre a buscar', 'warning');
-                return;
-            }
-            
-            try {
-                updateStatus('Buscando...', 'info');
-                
-                let pobladosUrl = `${SUPABASE_URL}/rest/v1/poblados?select=*,geom&nombre=ilike.*${nombre}*`;
-                
-                const headers = { 
-                    'apikey': SUPABASE_KEY, 
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                };
-                
-                const response = await fetch(pobladosUrl, { headers });
-                const pobladosEncontrados = await response.json();
-                
-                // Mostrar resultados en la lista
-                mostrarListaResultados(pobladosEncontrados);
-                
-                // También actualizar el mapa
-                allPoblados = pobladosEncontrados;
-                mostrarDatos();
-                
-                updateStatus(`Encontrados: ${pobladosEncontrados.length} poblados`, 'success');
-                
-            } catch (error) {
-                updateStatus(`Error: ${error.message}`, 'danger');
-            }
-        }
-        
-        function mostrarListaResultados(poblados) {
-            const listaDiv = document.getElementById('listaResultados');
-            const contenidoDiv = document.getElementById('contenidoResultados');
-            
-            if (poblados.length === 0) {
-                contenidoDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados</div>';
-                listaDiv.style.display = 'block';
-                return;
-            }
-            
-            contenidoDiv.innerHTML = '';
-            
-            poblados.forEach(poblado => {
-                const item = document.createElement('div');
-                item.className = 'resultado-item p-2 border-bottom';
-                item.innerHTML = `
-                    <div><strong>${poblado.nombre}</strong></div>
-                    <small class="text-muted">${poblado.provincia || 'N/A'} - ${poblado.tipo || 'N/A'}</small>
-                `;
-                
-                item.addEventListener('click', function() {
-                    irAPobladoEnMapa(poblado);
-                });
-                
-                contenidoDiv.appendChild(item);
-            });
-            
-            listaDiv.style.display = 'block';
-        }
-        
-        // Ir a un poblado específico en el mapa con zoom nivel parroquial
-        function irAPobladoEnMapa(poblado) {
-            if (poblado.geom) {
-                const coords = extractCoordinates(poblado.geom);
-                if (coords) {
-                    // Determinar el zoom según el tipo de poblado para nivel parroquial
-                    let zoomLevel;
-                    switch(poblado.tipo) {
-                        case 'Capital Provincial':
-                            zoomLevel = 11; // Zoom más alejado para capitales
-                            break;
-                        case 'Cabecera Cantonal':
-                            zoomLevel = 12; // Zoom medio para cabeceras cantonales
-                            break;
-                        case 'Cabecera Parroquial':
-                            zoomLevel = 13; // Zoom ideal para nivel parroquial
-                            break;
-                        case 'Recinto':
-                            zoomLevel = 14; // Zoom más cercano para recintos
-                            break;
-                        default:
-                            zoomLevel = 13; // Zoom por defecto nivel parroquial
-                    }
-                    
-                    map.setView(coords, zoomLevel);
-                    
-                    // Asegurar que los poblados están visibles
-                    if (!activeLayers.poblados) {
-                        document.getElementById('poblados').checked = true;
-                        toggleLayer('poblados');
-                    }
-                    
-                    // Mostrar popup del poblado después de un breve delay
-                    setTimeout(() => {
-                        pobladosLayer.eachLayer(function(layer) {
-                            if (layer.getPopup() && layer.getPopup().getContent().includes(poblado.nombre)) {
-                                layer.openPopup();
-                            }
-                        });
-                    }, 500);
-                    
-                    updateStatus(`Mostrando: ${poblado.nombre}`, 'info');
-                }
-            }
-        }
-        
-        // Cargar información de tablas disponibles (formato mejorado)
-        async function cargarInfoTablas() {
-            try {
-                const tablasConocidas = ['poblados', 'aeropuertos', 'reportes'];
-                let infoHtml = '';
-                
-                for (const tabla of tablasConocidas) {
-                    try {
-                        const count = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?select=*&limit=0`, {
-                            headers: { 
-                                'apikey': SUPABASE_KEY, 
-                                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                                'Prefer': 'count=exact'
-                            }
-                        });
-                        
-                        const totalCount = count.headers.get('content-range')?.split('/')[1] || '?';
-                        infoHtml += `<div class="tabla-info"><strong>${tabla}:</strong> ${totalCount} registros</div>`;
-                    } catch (e) {
-                        infoHtml += `<div class="tabla-info"><strong>${tabla}:</strong> N/A</div>`;
-                    }
-                }
-                
-                document.getElementById('tablesInfo').innerHTML = infoHtml;
-            } catch (error) {
-                document.getElementById('tablesInfo').innerHTML = '<div class="tabla-info text-danger">Error cargando información</div>';
-            }
-        }
-        
-        function limpiarFiltros() {
-            document.getElementById('filtroNombre').value = '';
-            document.getElementById('listaResultados').style.display = 'none';
-            cargarDatos(); // Recargar todos los datos
-        }
-        
-        // Función para descargar reportes como GeoJSON
-        function descargarReportesGeoJSON() {
-            if (reportes.length === 0) {
-                updateStatus('No hay reportes para descargar', 'warning');
-                return;
-            }
-            
-            // Crear estructura GeoJSON
-            const geojson = {
-                "type": "FeatureCollection",
-                "features": reportes.map(reporte => ({
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [reporte.lng, reporte.lat]
-                    },
-                    "properties": {
-                        "id": reporte.id,
-                        "nombre": reporte.nombre,
-                        "tipo": reporte.tipo,
-                        "descripcion": reporte.descripcion,
-                        "fecha_creacion": reporte.fecha_creacion,
-                        "estado": reporte.estado || 'Pendiente',
-                        "visible": reporte.visible,
-                        "punto_cercano": reporte.punto_cercano || 'N/A'
-                    }
-                }))
-            };
-            
-            // Crear archivo para descarga
-            const dataStr = JSON.stringify(geojson, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            // Crear enlace de descarga
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `reportes_ecuador_${new Date().toISOString().split('T')[0]}.geojson`;
-            
-            // Simular clic para descargar
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            updateStatus(`Descargados ${reportes.length} reportes en formato GeoJSON`, 'success');
-        }
-        
-        function updateInfo() {
-            const poblados = pobladosLayer.getLayers().length;
-            const reportesCount = reportesLayer.getLayers().length;
-            document.getElementById('info').textContent = `Mostrando: ${poblados} poblados, ${reportesCount} reportes (Zoom: ${map.getZoom()})`;
-        }
 
-        // =================== FUNCIONES DEL MODAL DE REPORTE ===================
-        
-        function abrirModalReporte() {
-            // Obtener ubicación al abrir el modal
-            obtenerUbicacion();
-        }
-        
-        function obtenerUbicacion() {
-            const coordenadasDiv = document.getElementById('coordenadas');
-            coordenadasDiv.textContent = 'Obteniendo ubicación...';
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        ubicacionActual = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        
-                        coordenadasDiv.textContent = 
-                            `Latitud: ${ubicacionActual.lat.toFixed(6)}, Longitud: ${ubicacionActual.lng.toFixed(6)}`;
-                        
-                        mostrarEstadoModal('Ubicación obtenida correctamente', 'success');
-                    },
-                    function(error) {
-                        let mensaje = 'Error obteniendo ubicación: ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                mensaje += 'Permiso denegado por el usuario';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                mensaje += 'Ubicación no disponible';
-                                break;
-                            case error.TIMEOUT:
-                                mensaje += 'Tiempo de espera agotado';
-                                break;
-                            default:
-                                mensaje += 'Error desconocido';
-                        }
-                        
-                        coordenadasDiv.textContent = 'No se pudo obtener la ubicación';
-                        mostrarEstadoModal(mensaje, 'danger');
-                    }
-                );
-            } else {
-                coordenadasDiv.textContent = 'Geolocalización no soportada';
-                mostrarEstadoModal('Este navegador no soporta geolocalización', 'warning');
-            }
-        }
-        
-        function mostrarEstadoModal(mensaje, tipo) {
-            const status = document.getElementById('statusModal');
-            status.className = `alert alert-${tipo}`;
-            status.textContent = mensaje;
-            status.classList.remove('d-none');
-            
-            // Ocultar después de 5 segundos si es éxito
-            if (tipo === 'success') {
-                setTimeout(() => {
-                    status.classList.add('d-none');
-                }, 5000);
-            }
-        }
-        
-        // Manejar envío del formulario
-        document.getElementById('reporteForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!ubicacionActual) {
-                mostrarEstadoModal('No se pudo obtener tu ubicación. Intenta recargar la página.', 'danger');
-                return;
-            }
-            
-            const reporte = {
-                nombre: document.getElementById('nombre').value.trim(),
-                tipo: document.getElementById('tipoProblema').value,
-                descripcion: document.getElementById('descripcion').value.trim(),
-                lat: ubicacionActual.lat,
-                lng: ubicacionActual.lng
-            };
-            
-            mostrarEstadoModal('Enviando reporte...', 'info');
-            
-            try {
-                // Enviar a Supabase
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/reportes`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify(reporte)
-                });
-                
-                if (response.ok) {
-                    mostrarEstadoModal('¡Reporte enviado exitosamente!', 'success');
-                    
-                    // Limpiar formulario
-                    document.getElementById('reporteForm').reset();
-                    
-                    // Actualizar reportes en el mapa
-                    await actualizarReportes();
-                    
-                    // Cerrar modal después de 2 segundos
-                    setTimeout(() => {
-                        const modalElement = document.getElementById('reporteModal');
-                        const modal = bootstrap.Modal.getInstance(modalElement);
-                        modal.hide();
-                        
-                        // Limpiar estado del modal
-                        document.getElementById('statusModal').classList.add('d-none');
-                        ubicacionActual = null;
-                        document.getElementById('coordenadas').textContent = 'Obteniendo ubicación...';
-                    }, 2000);
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error del servidor:', errorText);
-                    mostrarEstadoModal(`Error del servidor: ${response.status}. Verifica que la tabla existe.`, 'danger');
-                }
-                
-            } catch (error) {
-                console.error('Error enviando reporte:', error);
-                mostrarEstadoModal('Error de conexión. Verifica tu internet y que la tabla "reportes" existe en Supabase.', 'danger');
-            }
-        });
-        
-        // Reintento de ubicación al hacer clic en coordenadas
-        document.getElementById('coordenadas').addEventListener('click', function() {
-            if (this.textContent.includes('No se pudo') || this.textContent.includes('Obteniendo')) {
-                obtenerUbicacion();
-            }
-        });
-        
-        // =================== INICIALIZACIÓN ===================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            initMap();
-            cargarDatos();
-        });
-        
-        document.getElementById('filtroNombre').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') aplicarFiltros();
-        });
-    </script>
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+    <!-- Custom JS Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/reports.js"></script>
 </body>
 </html>
