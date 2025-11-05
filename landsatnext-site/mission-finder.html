@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Find which Landsat satellite was operational for your research year. Interactive tool to identify the right Landsat mission and data for your temporal analysis.">
+    <meta name="keywords" content="Landsat finder, satellite selector, Landsat by year, which Landsat, mission timeline, satellite availability">
+    <meta name="author" content="Landsat Next Information Portal">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Landsat Mission Finder - Find the Right Satellite for Your Year">
+    <meta property="og:description" content="Interactive tool to find which Landsat satellites were operational during specific years for your research.">
+    <meta property="og:type" content="website">
+
+    <title>Mission Finder - Find the Right Landsat for Your Year | Landsat Next</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .finder-tool {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.05) 0%, rgba(0, 168, 225, 0.05) 100%);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            border: 2px solid var(--accent-color);
+        }
+
+        .year-input-section {
+            margin-bottom: 2rem;
+        }
+
+        .year-inputs {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .year-input-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .year-input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .year-input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .year-input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .btn-find {
+            background: var(--accent-color);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-find:hover {
+            background: var(--primary-color);
+        }
+
+        .btn-reset {
+            background: var(--gray);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-left: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-reset:hover {
+            background: var(--text-color);
+        }
+
+        #results {
+            margin-top: 2rem;
+        }
+
+        .result-item {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .result-item h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .satellite-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .status-operational {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-decommissioned {
+            background: #9E9E9E;
+            color: white;
+        }
+
+        .status-planned {
+            background: #2196F3;
+            color: white;
+        }
+
+        .status-failed {
+            background: #F44336;
+            color: white;
+        }
+
+        .specs-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .spec-item {
+            background: var(--light-bg);
+            padding: 0.75rem;
+            border-radius: 5px;
+        }
+
+        .spec-label {
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .spec-value {
+            color: var(--text-color);
+            margin-top: 0.25rem;
+        }
+
+        .warning-box {
+            background: #FFF3CD;
+            border: 2px solid #FFC107;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .error-box {
+            background: #F8D7DA;
+            border: 2px solid #F44336;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .recommendation-box {
+            background: #D1ECF1;
+            border: 2px solid #0C5460;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .recommendation-box h4 {
+            margin-top: 0;
+            color: #0C5460;
+        }
+
+        .quick-search {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .quick-year-btn {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .quick-year-btn:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .timeline-visual {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .year-inputs {
+                flex-direction: column;
+            }
+
+            .btn-reset {
+                margin-left: 0;
+            }
+
+            .specs-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Landsat Mission Finder",
+        "description": "Interactive tool to find which Landsat satellites were operational during specific years",
+        "applicationCategory": "EducationalApplication",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Landsat Next Information Portal"
+        }
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1 class="site-title">Landsat Next</h1>
+            <p class="site-subtitle">Next Generation Earth Observation - NASA & USGS Partnership</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="missions.html">Missions</a></li>
+            <li><a href="landsat-next.html">Landsat Next</a></li>
+            <li><a href="technical-specs.html">Technical Specs</a></li>
+            <li><a href="mission-finder.html" class="active">Mission Finder</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1>Landsat Mission Finder</h1>
+            <p>Find the right Landsat satellite for your research year. Enter any year from 1972 to 2035 and discover which satellites were operational and their capabilities.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>How It Works</h2>
+            <p>
+                Not sure which Landsat satellite to use for your analysis? This tool helps you identify which Landsat missions were operational during specific years, along with their technical specifications and data availability.
+            </p>
+            <p>
+                Simply enter one or more years, and we'll tell you which satellites were collecting data, their sensor capabilities, spatial resolution, and spectral bands available.
+            </p>
+        </section>
+
+        <section class="content-section">
+            <div class="finder-tool">
+                <h2>Search by Year</h2>
+
+                <div class="year-input-section">
+                    <p><strong>Enter up to 5 years to compare available satellites:</strong></p>
+
+                    <div class="year-inputs">
+                        <div class="year-input-group">
+                            <label for="year1">Year 1:</label>
+                            <input type="number" id="year1" min="1972" max="2035" placeholder="e.g., 1991">
+                        </div>
+                        <div class="year-input-group">
+                            <label for="year2">Year 2 (optional):</label>
+                            <input type="number" id="year2" min="1972" max="2035" placeholder="e.g., 2001">
+                        </div>
+                        <div class="year-input-group">
+                            <label for="year3">Year 3 (optional):</label>
+                            <input type="number" id="year3" min="1972" max="2035" placeholder="e.g., 2019">
+                        </div>
+                        <div class="year-input-group">
+                            <label for="year4">Year 4 (optional):</label>
+                            <input type="number" id="year4" min="1972" max="2035" placeholder="e.g., 2024">
+                        </div>
+                        <div class="year-input-group">
+                            <label for="year5">Year 5 (optional):</label>
+                            <input type="number" id="year5" min="1972" max="2035" placeholder="e.g., 2031">
+                        </div>
+                    </div>
+
+                    <button class="btn-find" onclick="findSatellites()">Find Satellites</button>
+                    <button class="btn-reset" onclick="resetForm()">Clear</button>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <p><strong>Quick Search Examples:</strong></p>
+                    <div class="quick-search">
+                        <button class="quick-year-btn" onclick="quickSearch(1975)">1975</button>
+                        <button class="quick-year-btn" onclick="quickSearch(1985)">1985</button>
+                        <button class="quick-year-btn" onclick="quickSearch(1995)">1995</button>
+                        <button class="quick-year-btn" onclick="quickSearch(2005)">2005</button>
+                        <button class="quick-year-btn" onclick="quickSearch(2015)">2015</button>
+                        <button class="quick-year-btn" onclick="quickSearch(2024)">2024</button>
+                        <button class="quick-year-btn" onclick="quickSearchMultiple([1991, 2001, 2019])">1991, 2001, 2019</button>
+                    </div>
+                </div>
+
+                <div id="results"></div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Understanding the Results</h2>
+            <div class="grid">
+                <div class="grid-item">
+                    <h3>Operational Status</h3>
+                    <p>Shows whether the satellite is currently operational, decommissioned, or planned for future launch.</p>
+                </div>
+                <div class="grid-item">
+                    <h3>Operational Period</h3>
+                    <p>The exact dates when the satellite was collecting data. Essential for temporal analysis.</p>
+                </div>
+                <div class="grid-item">
+                    <h3>Instruments & Sensors</h3>
+                    <p>The sensor type (MSS, TM, ETM+, OLI/TIRS) determines the data quality and processing requirements.</p>
+                </div>
+                <div class="grid-item">
+                    <h3>Spatial Resolution</h3>
+                    <p>The ground pixel size varies by mission: 80m (Landsat 1-3), 30m (Landsat 4-9), down to 10-20m (Landsat Next).</p>
+                </div>
+                <div class="grid-item">
+                    <h3>Spectral Bands</h3>
+                    <p>Number of spectral bands available, ranging from 4 bands (early missions) to 26 bands (Landsat Next).</p>
+                </div>
+                <div class="grid-item">
+                    <h3>Data Access</h3>
+                    <p>Information on where to access the data, typically through USGS Earth Explorer or NASA data portals.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="sources-section">
+            <h3>Data Sources</h3>
+            <p>
+                All mission timelines, specifications, and operational dates sourced from official USGS and NASA documentation. Data is regularly updated to reflect current mission status.
+            </p>
+            <ul>
+                <li><a href="https://www.usgs.gov/landsat-missions/landsat-satellite-missions" target="_blank" rel="noopener">USGS - Landsat Satellite Missions</a></li>
+                <li><a href="https://landsat.gsfc.nasa.gov/satellites/" target="_blank" rel="noopener">NASA - Landsat Satellites</a></li>
+                <li><a href="https://earthexplorer.usgs.gov/" target="_blank" rel="noopener">USGS Earth Explorer - Data Access</a></li>
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Landsat Next Information Portal. This is an educational resource about NASA and USGS's Landsat program.</p>
+        <p>All information sourced from official NASA and USGS publications.</p>
+        <div class="footer-links">
+            <a href="https://landsat.gsfc.nasa.gov/" target="_blank" rel="noopener">NASA Landsat Science</a> |
+            <a href="https://www.usgs.gov/landsat-missions" target="_blank" rel="noopener">USGS Landsat Missions</a> |
+            <a href="https://giscrack.com" target="_blank" rel="noopener">GIS Resources</a>
+        </div>
+    </footer>
+
+    <script src="assets/js/mission-finder.js"></script>
+</body>
+</html>
